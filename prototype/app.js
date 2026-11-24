@@ -4,8 +4,8 @@
 
   // Demo lobbies keyed by join code.
   const LOBBIES = {
-    "123456": { name: "Sabah Koşu Grubu", members: 12, coach: "Ayşe K.", approval: false },
-    "222222": { name: "Fitness 101", members: 28, coach: "Can D.", approval: true },
+    "123456": { id: "run", name: "Sabah Koşu Grubu", members: 12, coach: "Ayşe K.", approval: false },
+    "222222": { id: "fit", name: "Fitness 101", members: 28, coach: "Can D.", approval: true },
   };
 
   const state = {
@@ -45,8 +45,8 @@
   function show(screen, { push = true } = {}) {
     $$(".screen").forEach((s) => s.classList.toggle("active", s.dataset.screen === screen));
     if (push && state.history[state.history.length - 1] !== screen) state.history.push(screen);
-    $("#backBtn").classList.toggle("visible", state.history.length > 1 && screen !== "welcome");
     if (screen === "welcome") state.history = ["welcome"];
+    $("#backBtn").classList.toggle("visible", state.history.length > 1);
     renderDynamic();
     const firstInput = $(`[data-screen="${screen}"] input`);
     if (firstInput && window.matchMedia("(min-width: 640px)").matches) firstInput.focus();
@@ -69,6 +69,7 @@
     $("#createdTitle").textContent = t("created.title", { lobby: created.name });
     $("#newCode").textContent = created.code;
     $("#createdMode").textContent = t(created.approval ? "created.modeApproval" : "created.modeOpen");
+    document.dispatchEvent(new Event("app:render"));
   }
 
   function toast(message) {
@@ -78,6 +79,16 @@
     clearTimeout(toast.timer);
     toast.timer = setTimeout(() => el.classList.remove("show"), 2000);
   }
+
+  // Shared API for the other prototype modules (lobby.js, ...).
+  window.App = {
+    t, $, $$, show, toast, state,
+    // Jump to a screen with an explicit back-stack, e.g. ["welcome", "lobbies", "lobby"].
+    go(screen, history) {
+      state.history = history.slice(0, -1).concat(screen);
+      show(screen, { push: false });
+    },
+  };
 
   // ---------- 1. code entry ----------
   const boxes = $$("#codeBoxes input");
@@ -203,12 +214,6 @@
       try { await navigator.clipboard.writeText(text); } catch (e) { /* clipboard blocked */ }
       toast(t("created.copied"));
     }
-  });
-
-  $("#toLobby").addEventListener("click", () => {
-    const c = state.createdLobby;
-    state.lobby = c ? { name: c.name, members: 1, coach: $("#ownerName").value.trim(), approval: c.approval } : null;
-    show("joined");
   });
 
   // ---------- global ----------

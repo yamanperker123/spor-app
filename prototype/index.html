@@ -96,8 +96,8 @@
           <button class="btn-link" data-go="account" data-i18n="joined.bannerCta"></button>
         </div>
       </div>
-      <div class="placeholder" data-i18n="joined.placeholder"></div>
       <div class="spacer"></div>
+      <button class="btn btn-primary" id="joinedToLobby" data-i18n="joined.toLobby"></button>
       <button class="btn btn-secondary" data-go="welcome" data-i18n="joined.another"></button>
     </section>
 
@@ -199,16 +199,65 @@
       <button class="btn btn-primary" id="toLobby" data-i18n="created.toLobby"></button>
     </section>
 
+    <!-- 9. My lobbies -->
+    <section class="screen" data-screen="lobbies">
+      <h2 data-i18n="lobbies.title"></h2>
+      <div class="stack" id="lobbyList"></div>
+      <div class="spacer"></div>
+      <div class="row">
+        <button class="btn btn-secondary" data-go="welcome" data-i18n="lobbies.join"></button>
+        <button class="btn btn-secondary" data-go="create" data-i18n="lobbies.create"></button>
+      </div>
+    </section>
+
+    <!-- 10. Lobby home: stats, next workout, calendar -->
+    <section class="screen lobby-screen" data-screen="lobby">
+      <div class="lobby-preview">
+        <div class="lobby-avatar" id="lobbyIcon"></div>
+        <div class="grow">
+          <h2 id="lobbyTitle"></h2>
+          <span class="meta" id="lobbyMeta"></span>
+        </div>
+        <span class="chip" id="lobbyRole"></span>
+      </div>
+
+      <div class="stats" id="lobbyStats"></div>
+      <div id="nextWorkout"></div>
+
+      <div class="cal-toolbar">
+        <div class="segmented" role="tablist">
+          <button role="tab" data-view="week" data-i18n="lobby.week"></button>
+          <button role="tab" data-view="month" data-i18n="lobby.month"></button>
+        </div>
+        <div class="cal-nav">
+          <button class="icon-btn" id="calPrev" data-i18n-aria="lobby.prev">&#8249;</button>
+          <span id="calLabel"></span>
+          <button class="icon-btn" id="calNext" data-i18n-aria="lobby.nextPeriod">&#8250;</button>
+        </div>
+      </div>
+      <div id="calendar"></div>
+      <div class="legend" id="calLegend"></div>
+      <div class="stack" id="dayList"></div>
+
+      <nav class="bottom-nav">
+        <button class="active"><span aria-hidden="true">&#128197;</span><span data-i18n="lobby.navCalendar"></span></button>
+        <button data-soon><span aria-hidden="true">&#128101;</span><span data-i18n="lobby.navMembers"></span></button>
+        <button data-soon><span aria-hidden="true">&#9881;</span><span data-i18n="lobby.navSettings"></span></button>
+      </nav>
+    </section>
+
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
 
   <!-- Prototype-only: jump between screens -->
   <nav class="proto-nav" id="protoNav">
     <ul id="protoList"></ul>
+    <button id="protoRole" class="proto-role"></button>
     <button id="protoToggle" data-i18n="proto.screens"></button>
   </nav>
 
   <script src="i18n.js"></script>
   <script src="app.js"></script>
+  <script src="lobby.js"></script>
 </body>
 </html>
