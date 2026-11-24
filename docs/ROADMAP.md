@@ -31,7 +31,7 @@
 - [x] Prototip 3: Antrenman detayı ve "geldim" işaretleme
 - [x] Prototip 4: Hoca: antrenman oluşturma (toplu/bireysel, egzersiz sıralama)
 - [x] Prototip 5: Hoca: üyeler, istatistikler, lobi ayarları ve lobiyi bozma
-- [ ] Prototipin onaylanması
+- [x] Prototipin onaylanması
 
 ## Faz 1: MVP (`v0.1.0`)
 
