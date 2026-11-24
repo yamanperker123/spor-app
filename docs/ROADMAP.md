@@ -26,7 +26,7 @@
 ## Faz 0: Hazırlık (`v0.0.x`)
 
 - [x] GitHub reposu ve sürüm kontrolü düzeni
-- [ ] Prototip 1: Giriş ve lobiye katılma akışı
+- [x] Prototip 1: Giriş ve lobiye katılma akışı
 - [ ] Prototip 2: Lobi ana ekranı ve takvim (haftalık/aylık)
 - [ ] Prototip 3: Antrenman detayı ve "geldim" işaretleme
 - [ ] Prototip 4: Hoca: antrenman oluşturma (toplu/bireysel, egzersiz sıralama)

@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spor App Prototip</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app" id="app">
+    <header class="topbar">
+      <button class="icon-btn back" id="backBtn" aria-label="Geri" data-i18n-aria="back">&#8592;</button>
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button data-lang="tr" class="active">TR</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </header>
+
+    <!-- 1. Welcome: join with code -->
+    <section class="screen active" data-screen="welcome">
+      <div class="brand">
+        <div class="logo">S</div>
+        <h1 data-i18n="welcome.title"></h1>
+        <p class="sub" data-i18n="welcome.sub"></p>
+      </div>
+      <div class="stack">
+        <label class="field" for="code0" data-i18n="welcome.codeLabel"></label>
+        <div class="code" id="codeBoxes">
+          <input id="code0" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="1">
+          <input inputmode="numeric" maxlength="1" aria-label="2">
+          <input inputmode="numeric" maxlength="1" aria-label="3">
+          <input inputmode="numeric" maxlength="1" aria-label="4">
+          <input inputmode="numeric" maxlength="1" aria-label="5">
+          <input inputmode="numeric" maxlength="1" aria-label="6">
+        </div>
+        <p class="error" id="codeError"></p>
+        <button class="btn btn-primary" id="joinBtn" disabled data-i18n="welcome.join"></button>
+      </div>
+      <div class="divider" data-i18n="common.or"></div>
+      <button class="btn btn-secondary" data-go="create" data-i18n="welcome.create"></button>
+      <div class="spacer"></div>
+      <p class="center sub">
+        <span data-i18n="welcome.haveAccount"></span>
+        <button class="btn-link" data-go="login" data-i18n="welcome.login"></button>
+      </p>
+      <p class="center hint" data-i18n="welcome.demo"></p>
+    </section>
+
+    <!-- 2. Name: how you appear in the lobby -->
+    <section class="screen" data-screen="name">
+      <div class="card soft lobby-preview">
+        <div class="lobby-avatar">&#127939;</div>
+        <div>
+          <strong id="previewName"></strong>
+          <span class="meta" id="previewMeta"></span>
+        </div>
+      </div>
+      <h2 data-i18n="name.title"></h2>
+      <label class="field">
+        <span data-i18n="name.label"></span>
+        <input class="input" id="nameInput" autocomplete="name" data-i18n-placeholder="name.placeholder">
+        <span class="hint" data-i18n="name.hint"></span>
+      </label>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="nameBtn" disabled data-i18n="name.continue"></button>
+    </section>
+
+    <!-- 3a. Pending approval (lobby in approval mode) -->
+    <section class="screen" data-screen="pending">
+      <div class="status-icon wait">&#9203;</div>
+      <h2 class="center" data-i18n="pending.title"></h2>
+      <p class="center sub" data-i18n="pending.sub"></p>
+      <div class="card soft lobby-preview">
+        <div class="lobby-avatar">&#127939;</div>
+        <div>
+          <strong id="pendingLobby"></strong>
+          <span class="meta" data-i18n="pending.meta"></span>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="simulateApprove" data-i18n="pending.simulate"></button>
+      <button class="btn btn-secondary" data-go="welcome" data-i18n="pending.cancel"></button>
+    </section>
+
+    <!-- 3b. Joined -->
+    <section class="screen" data-screen="joined">
+      <div class="status-icon ok">&#10003;</div>
+      <h2 class="center" id="joinedTitle"></h2>
+      <p class="center sub" data-i18n="joined.sub"></p>
+      <div class="banner" id="accountBanner">
+        <span aria-hidden="true">&#128274;</span>
+        <div>
+          <p data-i18n="joined.bannerText"></p>
+          <button class="btn-link" data-go="account" data-i18n="joined.bannerCta"></button>
+        </div>
+      </div>
+      <div class="placeholder" data-i18n="joined.placeholder"></div>
+      <div class="spacer"></div>
+      <button class="btn btn-secondary" data-go="welcome" data-i18n="joined.another"></button>
+    </section>
+
+    <!-- 4. Link account -->
+    <section class="screen" data-screen="account">
+      <h2 data-i18n="account.title"></h2>
+      <p class="sub" data-i18n="account.sub"></p>
+      <form class="stack" id="accountForm" novalidate>
+        <label class="field">
+          <span data-i18n="account.username"></span>
+          <input class="input" id="accUser" autocomplete="username">
+        </label>
+        <label class="field">
+          <span data-i18n="account.email"></span>
+          <input class="input" id="accEmail" type="email" autocomplete="email">
+          <span class="hint" data-i18n="account.emailHint"></span>
+        </label>
+        <label class="field">
+          <span data-i18n="account.password"></span>
+          <input class="input" id="accPass" type="password" autocomplete="new-password">
+          <span class="hint" data-i18n="account.passwordHint"></span>
+        </label>
+        <p class="error" id="accountError"></p>
+        <button class="btn btn-primary" type="submit" data-i18n="account.save"></button>
+      </form>
+    </section>
+
+    <!-- 5. Log in -->
+    <section class="screen" data-screen="login">
+      <h2 data-i18n="login.title"></h2>
+      <form class="stack" id="loginForm" novalidate>
+        <label class="field">
+          <span data-i18n="login.user"></span>
+          <input class="input" id="loginUser" autocomplete="username">
+        </label>
+        <label class="field">
+          <span data-i18n="login.password"></span>
+          <input class="input" id="loginPass" type="password" autocomplete="current-password">
+        </label>
+        <p class="error" id="loginError"></p>
+        <button class="btn btn-primary" type="submit" data-i18n="login.submit"></button>
+      </form>
+      <button class="btn-link" data-go="forgot" data-i18n="login.forgot"></button>
+    </section>
+
+    <!-- 6. Forgot password -->
+    <section class="screen" data-screen="forgot">
+      <h2 data-i18n="forgot.title"></h2>
+      <p class="sub" data-i18n="forgot.sub"></p>
+      <form class="stack" id="forgotForm" novalidate>
+        <label class="field">
+          <span data-i18n="account.email"></span>
+          <input class="input" id="forgotEmail" type="email" autocomplete="email">
+        </label>
+        <p class="error" id="forgotError"></p>
+        <button class="btn btn-primary" type="submit" data-i18n="forgot.submit"></button>
+      </form>
+    </section>
+
+    <!-- 7. Create lobby -->
+    <section class="screen" data-screen="create">
+      <h2 data-i18n="create.title"></h2>
+      <form class="stack" id="createForm" novalidate>
+        <label class="field">
+          <span data-i18n="create.name"></span>
+          <input class="input" id="lobbyName" data-i18n-placeholder="create.namePlaceholder">
+        </label>
+        <label class="field">
+          <span data-i18n="create.yourName"></span>
+          <input class="input" id="ownerName" autocomplete="name">
+        </label>
+        <div class="card toggle-row">
+          <div>
+            <strong data-i18n="create.approval"></strong>
+            <div class="meta" data-i18n="create.approvalHint"></div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="approvalToggle">
+            <span></span>
+          </label>
+        </div>
+        <p class="error" id="createError"></p>
+        <button class="btn btn-primary" type="submit" data-i18n="create.submit"></button>
+      </form>
+    </section>
+
+    <!-- 8. Lobby created: share code -->
+    <section class="screen" data-screen="created">
+      <div class="status-icon ok">&#10003;</div>
+      <h2 class="center" id="createdTitle"></h2>
+      <p class="center sub" data-i18n="created.sub"></p>
+      <div class="big-code" id="newCode"></div>
+      <div class="row">
+        <button class="btn btn-secondary" id="copyCode" data-i18n="created.copy"></button>
+        <button class="btn btn-secondary" id="shareCode" data-i18n="created.share"></button>
+      </div>
+      <p class="center hint" id="createdMode"></p>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="toLobby" data-i18n="created.toLobby"></button>
+    </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <!-- Prototype-only: jump between screens -->
+  <nav class="proto-nav" id="protoNav">
+    <ul id="protoList"></ul>
+    <button id="protoToggle" data-i18n="proto.screens"></button>
+  </nav>
+
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
