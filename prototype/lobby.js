@@ -34,19 +34,19 @@
     {
       id: "run", code: "123456", name: "Sabah Koşu Grubu", icon: "🏃", members: 12, role: "student",
       days: [1, 3, 5], time: "07:00", titles: ["Tempolu koşu", "Interval 8×400 m", "Uzun koşu"],
-      rate: 0.75, seed: 7, joined: true,
+      rate: 0.75, seed: 7, joined: true, approval: false, coachNames: ["Ayşe K."],
       individual: { day: 0, time: "18:30", title: "Kuvvet: bacak" },
     },
     {
       id: "evening", code: "734190", name: "Akşam Fitness", icon: "💪", members: 18, role: "coach",
       days: [0, 2, 4], time: "19:00", titles: ["Tüm vücut", "Üst vücut", "Alt vücut + core"],
-      rate: 0.8, seed: 11, joined: true,
+      rate: 0.8, seed: 11, joined: true, approval: true, coachNames: ["Can D."], pending: ["Kerem A.", "Sude N."],
       individual: { day: 5, time: "10:00", title: "Mobilite", forName: "Mehmet Y." },
     },
     {
       id: "fit", code: "222222", name: "Fitness 101", icon: "🏋️", members: 28, role: "student",
       days: [1, 4], time: "20:00", titles: ["Kardiyo", "Kuvvet"],
-      rate: 0.6, seed: 3, joined: false,
+      rate: 0.6, seed: 3, joined: false, approval: true, coachNames: ["Can D."],
     },
   ];
 
@@ -115,10 +115,19 @@
     return list.sort((a, b) => a.date - b.date || a.time.localeCompare(b.time));
   }
 
-  const lobbies = DEFS.map((def) => ({ ...def, memberNames: NAMES.slice(0, def.members), workouts: buildWorkouts(def) }));
+  // memberNames = students; coachNames = other coaches (the viewer's own role is lobby.role).
+  const lobbies = DEFS.map((def) => ({
+    ...def,
+    memberNames: NAMES.slice(0, def.members),
+    coachNames: (def.coachNames || []).slice(),
+    pending: (def.pending || []).slice(),
+    archivedAt: null,
+    workouts: buildWorkouts(def),
+  }));
+  const ARCHIVE_MS = 2 * DAY_MS;
   const sortWorkouts = (lobby) => lobby.workouts.sort((a, b) => a.date - b.date || a.time.localeCompare(b.time));
 
-  const view = { lobby: lobbies[0], mode: "month", cursor: today, selected: today, workout: null };
+  const view = { lobby: lobbies[0], tab: "calendar", mode: "month", cursor: today, selected: today, workout: null };
 
   // ---------- derived data ----------
   const inRange = (w, from, to) => w.date >= from && w.date < to;
@@ -320,6 +329,8 @@
       $("#nextWorkout").innerHTML = `<div class="placeholder">${esc(t("lobby.empty"))}</div>`;
     }
 
+    $$('[data-screen="lobby"] [data-panel]').forEach((p) => { p.hidden = p.dataset.panel !== view.tab; });
+    $$(".bottom-nav [data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === view.tab));
     $("#addWorkout").hidden = lobby.role !== "coach";
     $$(".cal-toolbar .segmented button").forEach((b) => b.classList.toggle("active", b.dataset.view === view.mode));
     if (view.mode === "month") renderMonth(lobby);
@@ -327,9 +338,37 @@
     renderLegend(lobby);
   }
 
+  function remainingLabel(lobby) {
+    const ms = Math.max(0, lobby.archivedAt + ARCHIVE_MS - Date.now());
+    const d = Math.floor(ms / DAY_MS);
+    const h = Math.floor((ms % DAY_MS) / 36e5);
+    return d ? t("lobbies.days", { d, h }) : t("lobbies.hours", { h: Math.max(1, h) });
+  }
+
+  function renderArchived() {
+    // Past the 2-day window the lobby is deleted for good.
+    for (let i = lobbies.length - 1; i >= 0; i--) {
+      if (lobbies[i].archivedAt && Date.now() - lobbies[i].archivedAt > ARCHIVE_MS) lobbies.splice(i, 1);
+    }
+    const archived = lobbies.filter((l) => l.joined && l.archivedAt);
+    $("#archivedList").innerHTML = archived.length
+      ? `<h3 class="section-title">${esc(t("lobbies.archived"))}</h3>` +
+        archived.map((l) => `
+          <div class="list-item archived">
+            <span class="lobby-avatar">${esc(l.icon)}</span>
+            <span class="grow">
+              <strong>${esc(l.name)}</strong>
+              <span class="meta">${esc(t("lobbies.deletesIn", { time: remainingLabel(l) }))}</span>
+            </span>
+            ${l.role === "coach" ? `<button class="btn btn-secondary btn-sm" data-restore="${esc(l.id)}">${esc(t("lobbies.restore"))}</button>` : ""}
+          </div>`).join("")
+      : "";
+  }
+
   function renderLobbyList() {
+    renderArchived();
     $("#lobbyList").innerHTML = lobbies
-      .filter((l) => l.joined)
+      .filter((l) => l.joined && !l.archivedAt)
       .map((l) => {
         const next = nextWorkout(l);
         return `
@@ -363,6 +402,7 @@
   function openLobby(lobby) {
     lobby.joined = true;
     view.lobby = lobby;
+    view.tab = "calendar";
     view.cursor = today;
     view.selected = today;
     window.App.go("lobby", ["welcome", "lobbies", "lobby"]);
@@ -380,7 +420,10 @@
     const c = appState.createdLobby || { name: "Sabah Koşu Grubu", code: $("#newCode").textContent };
     let lobby = lobbies.find((l) => l.code === c.code);
     if (!lobby) {
-      lobby = { id: `new-${c.code}`, code: c.code, name: c.name, icon: "⭐", members: 1, role: "coach", joined: true, memberNames: [], workouts: [] };
+      lobby = {
+        id: `new-${c.code}`, code: c.code, name: c.name, icon: "⭐", members: 0, role: "coach", joined: true,
+        approval: !!c.approval, memberNames: [], coachNames: [], pending: [], archivedAt: null, workouts: [],
+      };
       lobbies.unshift(lobby);
     }
     openLobby(lobby);
@@ -390,6 +433,14 @@
   $("#lobbyList").addEventListener("click", (e) => {
     const item = e.target.closest("[data-lobby]");
     if (item) openLobby(lobbies.find((l) => l.id === item.dataset.lobby));
+  });
+
+  $("#archivedList").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-restore]");
+    if (!btn) return;
+    lobbies.find((l) => l.id === btn.dataset.restore).archivedAt = null;
+    toast(t("lobbies.restored"));
+    renderLobbyList();
   });
 
   $$(".cal-toolbar .segmented button").forEach((b) => b.addEventListener("click", () => {
@@ -436,7 +487,12 @@
     }
     const card = e.target.closest("[data-workout]");
     if (card) openWorkout(Number(card.dataset.workout));
-    if (e.target.closest("[data-soon]")) toast(t("lobby.soon"));
+    const tab = e.target.closest("[data-tab]");
+    if (tab) {
+      view.tab = tab.dataset.tab;
+      window.scrollTo(0, 0);
+      document.dispatchEvent(new Event("app:render"));
+    }
   });
 
   $("#protoRole").addEventListener("click", () => {
@@ -445,7 +501,10 @@
   });
 
   // Shared with workout.js.
-  window.Lobby = { view, today, esc, fmt, typeLabel, canMark, setAttended, nextWorkout, sortWorkouts, MARK_WINDOW_DAYS };
+  window.Lobby = {
+    view, lobbies, today, esc, fmt, pct, addDays, mondayOf, sameDay, inRange,
+    typeLabel, canMark, setAttended, nextWorkout, sortWorkouts, MARK_WINDOW_DAYS,
+  };
 
   document.addEventListener("app:render", render);
   render();

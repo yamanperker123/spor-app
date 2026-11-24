@@ -7,7 +7,8 @@ Lobiye Kahoot'taki gibi 6 haneli kodla girilir; antrenmanlar tarihlidir, katıl�
 
 ## Durum
 
-**Faz 0: Prototip.** Henüz uygulama kodu yok; tıklanabilir HTML prototip [`prototype/`](prototype/) klasöründe parça parça geliştiriliyor.
+**Faz 0 tamamlandı (`v0.0.1`).** Tıklanabilir HTML prototip [`prototype/`](prototype/) klasöründe: giriş ve lobiye katılma, lobi ve takvim, antrenman detayı ve "Geldim", antrenman oluşturma, üyeler ve ayarlar.
+**Sıradaki: Faz 1 (MVP)**: Next.js + Supabase ile gerçek uygulama.
 Kapsam, kararlar ve yol haritası: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Prototipi açma

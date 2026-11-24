@@ -203,6 +203,7 @@
     <section class="screen" data-screen="lobbies">
       <h2 data-i18n="lobbies.title"></h2>
       <div class="stack" id="lobbyList"></div>
+      <div class="stack" id="archivedList"></div>
       <div class="spacer"></div>
       <div class="row">
         <button class="btn btn-secondary" data-go="welcome" data-i18n="lobbies.join"></button>
@@ -221,6 +222,8 @@
         <span class="chip" id="lobbyRole"></span>
       </div>
 
+      <!-- Tab: calendar -->
+      <div class="tab-panel" data-panel="calendar">
       <div class="stats" id="lobbyStats"></div>
       <div id="nextWorkout"></div>
       <button class="btn btn-secondary" id="addWorkout" data-add data-i18n="lobby.addWorkout"></button>
@@ -239,12 +242,70 @@
       <div id="calendar"></div>
       <div class="legend" id="calLegend"></div>
       <div class="stack" id="dayList"></div>
+      </div>
+
+      <!-- Tab: members -->
+      <div class="tab-panel" data-panel="members" id="membersPanel"></div>
+
+      <!-- Tab: settings -->
+      <div class="tab-panel" data-panel="settings">
+        <div id="settingsCoach" class="stack">
+          <label class="field">
+            <span data-i18n="settings.name"></span>
+            <div class="row">
+              <input class="input grow" id="setName">
+              <button class="btn btn-secondary btn-sm" id="setNameSave" data-i18n="settings.saveName"></button>
+            </div>
+          </label>
+        </div>
+        <div class="field">
+          <span data-i18n="settings.code"></span>
+          <div class="big-code" id="setCode"></div>
+          <div class="row">
+            <button class="btn btn-secondary" id="setCopy" data-i18n="settings.copy"></button>
+            <button class="btn btn-secondary" id="setRegen" data-i18n="settings.regen"></button>
+          </div>
+        </div>
+        <div class="card toggle-row" id="setApprovalRow">
+          <div>
+            <strong data-i18n="create.approval"></strong>
+            <div class="meta" data-i18n="create.approvalHint"></div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="setApproval">
+            <span></span>
+          </label>
+        </div>
+        <button class="btn btn-secondary" id="setLeave" data-i18n="settings.leave"></button>
+        <div class="danger-zone" id="setDanger">
+          <strong data-i18n="settings.danger"></strong>
+          <p class="meta" data-i18n="settings.dissolveHint"></p>
+          <button class="btn btn-danger" id="setDissolve" data-i18n="settings.dissolve"></button>
+        </div>
+      </div>
 
       <nav class="bottom-nav">
-        <button class="active"><span aria-hidden="true">&#128197;</span><span data-i18n="lobby.navCalendar"></span></button>
-        <button data-soon><span aria-hidden="true">&#128101;</span><span data-i18n="lobby.navMembers"></span></button>
-        <button data-soon><span aria-hidden="true">&#9881;</span><span data-i18n="lobby.navSettings"></span></button>
+        <button data-tab="calendar"><span aria-hidden="true">&#128197;</span><span data-i18n="lobby.navCalendar"></span></button>
+        <button data-tab="members"><span aria-hidden="true">&#128101;</span><span data-i18n="lobby.navMembers"></span></button>
+        <button data-tab="settings"><span aria-hidden="true">&#9881;</span><span data-i18n="lobby.navSettings"></span></button>
       </nav>
+    </section>
+
+    <!-- 13. Member detail (coach): stats per student, role, remove -->
+    <section class="screen" data-screen="member">
+      <div class="lobby-preview">
+        <div class="avatar-lg" id="mInitials"></div>
+        <div class="grow">
+          <h2 id="mName"></h2>
+          <span class="meta" id="mLobby"></span>
+        </div>
+        <span class="chip" id="mRole"></span>
+      </div>
+      <div id="mBody"></div>
+      <div class="stack" id="mActions">
+        <button class="btn btn-secondary" id="mToggleRole"></button>
+        <button class="btn btn-danger" id="mKick"></button>
+      </div>
     </section>
 
     <!-- 11. Workout detail: exercises, "Geldim", attendance (coach) -->
@@ -325,5 +386,6 @@
   <script src="lobby.js"></script>
   <script src="workout.js"></script>
   <script src="editor.js"></script>
+  <script src="manage.js"></script>
 </body>
 </html>
