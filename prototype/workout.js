@@ -109,7 +109,7 @@
     if (!w) return;
     if (e.target.closest("[data-mark-detail]")) { L.setAttended(w, true); render(); }
     if (e.target.closest("[data-unmark]")) { L.setAttended(w, false); render(); }
-    if (e.target.closest("[data-edit]")) window.App.toast(t("workout.editSoon"));
+    if (e.target.closest("[data-edit]")) window.Editor.open("edit", w);
   });
 
   document.addEventListener("app:render", render);
