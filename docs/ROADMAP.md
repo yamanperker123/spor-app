@@ -30,7 +30,7 @@
 - [x] Prototip 2: Lobi ana ekranı ve takvim (haftalık/aylık)
 - [x] Prototip 3: Antrenman detayı ve "geldim" işaretleme
 - [x] Prototip 4: Hoca: antrenman oluşturma (toplu/bireysel, egzersiz sıralama)
-- [ ] Prototip 5: Hoca: üyeler, istatistikler, lobi ayarları ve lobiyi bozma
+- [x] Prototip 5: Hoca: üyeler, istatistikler, lobi ayarları ve lobiyi bozma
 - [ ] Prototipin onaylanması
 
 ## Faz 1: MVP (`v0.1.0`)
