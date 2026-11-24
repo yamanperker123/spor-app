@@ -223,6 +223,7 @@
 
       <div class="stats" id="lobbyStats"></div>
       <div id="nextWorkout"></div>
+      <button class="btn btn-secondary" id="addWorkout" data-add data-i18n="lobby.addWorkout"></button>
 
       <div class="cal-toolbar">
         <div class="segmented" role="tablist">
@@ -262,6 +263,53 @@
       <div id="wAttendance"></div>
     </section>
 
+    <!-- 12. Workout editor (coach): create / edit / delete -->
+    <section class="screen" data-screen="editor">
+      <h2 id="edTitle"></h2>
+      <form class="stack" id="editorForm" novalidate>
+        <label class="field">
+          <span data-i18n="editor.name"></span>
+          <input class="input" id="edName" data-i18n-placeholder="editor.namePh">
+        </label>
+        <div class="row">
+          <label class="field grow">
+            <span data-i18n="editor.date"></span>
+            <input class="input" id="edDate" type="date">
+          </label>
+          <label class="field" style="width: 120px">
+            <span data-i18n="editor.time"></span>
+            <input class="input" id="edTime" type="time">
+          </label>
+        </div>
+
+        <div class="field">
+          <span data-i18n="editor.type"></span>
+          <div class="segmented wide" role="radiogroup">
+            <button type="button" role="radio" data-type="group" data-i18n="editor.group"></button>
+            <button type="button" role="radio" data-type="individual" data-i18n="editor.individual"></button>
+          </div>
+          <span class="hint" id="edTypeHint"></span>
+        </div>
+        <label class="field" id="edStudentField">
+          <span data-i18n="editor.student"></span>
+          <select class="input" id="edStudent"></select>
+        </label>
+
+        <div class="field">
+          <span data-i18n="editor.exercises"></span>
+          <ol class="ex-edit-list" id="edExercises"></ol>
+          <button type="button" class="btn btn-secondary" id="edAdd" data-i18n="editor.add"></button>
+          <span class="hint" data-i18n="editor.quick"></span>
+          <div class="quick-add" id="edQuick"></div>
+          <span class="hint" data-i18n="editor.dragHint"></span>
+        </div>
+
+        <p class="error" id="edError"></p>
+        <button class="btn btn-primary" type="submit" id="edSave"></button>
+        <button type="button" class="btn btn-danger" id="edDelete"></button>
+      </form>
+    </section>
+
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
 
@@ -276,5 +324,6 @@
   <script src="app.js"></script>
   <script src="lobby.js"></script>
   <script src="workout.js"></script>
+  <script src="editor.js"></script>
 </body>
 </html>

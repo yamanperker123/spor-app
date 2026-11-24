@@ -115,7 +115,8 @@
     return list.sort((a, b) => a.date - b.date || a.time.localeCompare(b.time));
   }
 
-  const lobbies = DEFS.map((def) => ({ ...def, workouts: buildWorkouts(def) }));
+  const lobbies = DEFS.map((def) => ({ ...def, memberNames: NAMES.slice(0, def.members), workouts: buildWorkouts(def) }));
+  const sortWorkouts = (lobby) => lobby.workouts.sort((a, b) => a.date - b.date || a.time.localeCompare(b.time));
 
   const view = { lobby: lobbies[0], mode: "month", cursor: today, selected: today, workout: null };
 
@@ -319,7 +320,8 @@
       $("#nextWorkout").innerHTML = `<div class="placeholder">${esc(t("lobby.empty"))}</div>`;
     }
 
-    $$(".segmented button").forEach((b) => b.classList.toggle("active", b.dataset.view === view.mode));
+    $("#addWorkout").hidden = lobby.role !== "coach";
+    $$(".cal-toolbar .segmented button").forEach((b) => b.classList.toggle("active", b.dataset.view === view.mode));
     if (view.mode === "month") renderMonth(lobby);
     else renderWeek(lobby);
     renderLegend(lobby);
@@ -378,7 +380,7 @@
     const c = appState.createdLobby || { name: "Sabah Koşu Grubu", code: $("#newCode").textContent };
     let lobby = lobbies.find((l) => l.code === c.code);
     if (!lobby) {
-      lobby = { id: `new-${c.code}`, code: c.code, name: c.name, icon: "⭐", members: 1, role: "coach", joined: true, workouts: [] };
+      lobby = { id: `new-${c.code}`, code: c.code, name: c.name, icon: "⭐", members: 1, role: "coach", joined: true, memberNames: [], workouts: [] };
       lobbies.unshift(lobby);
     }
     openLobby(lobby);
@@ -390,7 +392,7 @@
     if (item) openLobby(lobbies.find((l) => l.id === item.dataset.lobby));
   });
 
-  $$(".segmented button").forEach((b) => b.addEventListener("click", () => {
+  $$(".cal-toolbar .segmented button").forEach((b) => b.addEventListener("click", () => {
     view.mode = b.dataset.view;
     view.cursor = view.selected;
     renderLobby();
@@ -427,6 +429,11 @@
       renderLobby();
       return;
     }
+    if (e.target.closest("[data-add]")) {
+      // Pre-fill the selected calendar day if it isn't in the past.
+      window.Editor.open("new", null, view.selected >= today ? view.selected : today);
+      return;
+    }
     const card = e.target.closest("[data-workout]");
     if (card) openWorkout(Number(card.dataset.workout));
     if (e.target.closest("[data-soon]")) toast(t("lobby.soon"));
@@ -438,7 +445,7 @@
   });
 
   // Shared with workout.js.
-  window.Lobby = { view, today, esc, fmt, typeLabel, canMark, setAttended, nextWorkout, MARK_WINDOW_DAYS };
+  window.Lobby = { view, today, esc, fmt, typeLabel, canMark, setAttended, nextWorkout, sortWorkouts, MARK_WINDOW_DAYS };
 
   document.addEventListener("app:render", render);
   render();
