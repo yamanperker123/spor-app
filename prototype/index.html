@@ -246,6 +246,22 @@
       </nav>
     </section>
 
+    <!-- 11. Workout detail: exercises, "Geldim", attendance (coach) -->
+    <section class="screen" data-screen="workout">
+      <div>
+        <span class="eyebrow" id="wLobby"></span>
+        <h2 id="wTitle"></h2>
+        <span class="meta" id="wWhen"></span>
+        <div class="chips" id="wChips"></div>
+      </div>
+      <div id="wAction"></div>
+      <div id="wBody">
+        <h3 class="section-title" data-i18n="workout.exercises"></h3>
+        <ol class="exercise-list" id="wExercises"></ol>
+      </div>
+      <div id="wAttendance"></div>
+    </section>
+
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
 
@@ -259,5 +275,6 @@
   <script src="i18n.js"></script>
   <script src="app.js"></script>
   <script src="lobby.js"></script>
+  <script src="workout.js"></script>
 </body>
 </html>

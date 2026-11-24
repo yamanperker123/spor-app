@@ -50,19 +50,56 @@
     },
   ];
 
+  // Exercise lists the coach would enter: name + reps (free text: "3 × 12", "10 dk", "5 km").
+  const TEMPLATES = {
+    "Tempolu koşu": [["Isınma koşusu", "10 dk"], ["Dinamik esneme", "8 hareket"], ["Tempolu koşu", "5 km"], ["Soğuma yürüyüşü", "5 dk"]],
+    "Interval 8×400 m": [["Isınma koşusu", "10 dk"], ["400 m hızlı", "8 tekrar"], ["200 m yavaş", "8 tekrar"], ["Esneme", "5 dk"]],
+    "Uzun koşu": [["Isınma", "5 dk"], ["Uzun koşu", "12 km"], ["Esneme", "10 dk"]],
+    "Kuvvet: bacak": [["Squat", "3 × 12"], ["Lunge", "3 × 10"], ["Romanian deadlift", "3 × 10"], ["Calf raise", "3 × 15"]],
+    "Tüm vücut": [["Burpee", "3 × 10"], ["Şınav", "3 × 12"], ["Squat", "3 × 15"], ["Plank", "3 × 45 sn"], ["Mekik", "3 × 20"]],
+    "Üst vücut": [["Şınav", "4 × 12"], ["Dumbbell row", "3 × 10"], ["Shoulder press", "3 × 10"], ["Triceps dips", "3 × 12"]],
+    "Alt vücut + core": [["Goblet squat", "4 × 12"], ["Glute bridge", "3 × 15"], ["Plank", "3 × 60 sn"], ["Russian twist", "3 × 20"], ["Dead bug", "3 × 12"]],
+    "Mobilite": [["Kalça açıcı", "2 × 10"], ["Thoracic rotation", "2 × 8"], ["Hamstring esneme", "2 × 30 sn"]],
+    "Kardiyo": [["İp atlama", "5 × 1 dk"], ["Jumping jack", "3 × 30"], ["Mountain climber", "3 × 20"]],
+    "Kuvvet": [["Deadlift", "4 × 8"], ["Bench press", "4 × 8"], ["Pull-up", "3 × 6"]],
+  };
+
+  const NAMES = [
+    "Ali K.", "Ayşe Y.", "Burak T.", "Cem A.", "Deniz Ö.", "Ece B.", "Emre S.", "Elif D.", "Fatih G.", "Gizem Ç.",
+    "Hakan U.", "İrem E.", "Kaan M.", "Leyla N.", "Mehmet Y.", "Merve H.", "Murat İ.", "Nazlı P.", "Onur R.", "Özge Z.",
+    "Selin V.", "Serkan F.", "Tuba L.", "Ufuk Ş.", "Yasemin O.", "Zeynep A.", "Barış C.", "Derya K.", "Ege T.", "Pelin S.",
+  ];
+
+  function shuffled(list, r) {
+    const a = list.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(r() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
   function buildWorkouts(def) {
     const r = rng(def.seed);
     const start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
     const end = addDays(today, 42);
     const list = [];
     let n = 0;
+    const memberNames = NAMES.slice(0, def.members);
     const make = (date, time, title, type, total, forName) => {
       const past = date < today;
+      const isToday = sameDay(date, today);
+      let attendedCount = 0;
+      if (type === "individual") attendedCount = past && r() < 0.8 ? 1 : 0;
+      else if (past) attendedCount = Math.round(total * (0.55 + r() * 0.35));
+      else if (isToday) attendedCount = Math.round(total * 0.3);
       return {
         date: new Date(date), time, title, type, forName, total,
-        exercises: 3 + Math.floor(r() * 4),
+        exercises: (TEMPLATES[title] || []).map(([name, reps]) => ({ name, reps })),
         attended: past && r() < def.rate,
-        attendedCount: past ? Math.round(total * (type === "individual" ? (r() < 0.8 ? 1 : 0) : 0.55 + r() * 0.35)) : 0,
+        attendedCount,
+        // Who marked "Geldim" first..last; the first attendedCount names attended.
+        order: type === "individual" ? [forName || "Mehmet Y."] : shuffled(memberNames, r),
       };
     };
     for (let d = start; d <= end; d = addDays(d, 1)) {
@@ -80,12 +117,24 @@
 
   const lobbies = DEFS.map((def) => ({ ...def, workouts: buildWorkouts(def) }));
 
-  const view = { lobby: lobbies[0], mode: "month", cursor: today, selected: today };
+  const view = { lobby: lobbies[0], mode: "month", cursor: today, selected: today, workout: null };
 
   // ---------- derived data ----------
   const inRange = (w, from, to) => w.date >= from && w.date < to;
 
+  // A student can mark "Geldim" on the workout day and up to 3 days after it.
+  const MARK_WINDOW_DAYS = 3;
+  const canMark = (w) => w.date <= today && w.date >= addDays(today, -MARK_WINDOW_DAYS);
+
+  function setAttended(w, on) {
+    if (w.attended === on) return;
+    w.attended = on;
+    w.attendedCount = Math.max(0, Math.min(w.total, w.attendedCount + (on ? 1 : -1)));
+    toast(t(on ? "workout.markedToast" : "workout.undoToast"));
+  }
+
   function studentStatus(w) {
+    if (w.attended) return "attended";
     if (w.date > today) return "upcoming";
     if (sameDay(w.date, today)) return "today";
     return w.attended ? "attended" : "missed";
@@ -130,10 +179,12 @@
   const nextWorkout = (lobby) => lobby.workouts.find((w) => w.date >= today);
 
   // ---------- rendering ----------
+  function typeLabel(w, lobby) {
+    if (w.type === "group") return t("lobby.group");
+    return lobby.role === "coach" && w.forName ? t("lobby.individualFor", { name: w.forName }) : t("lobby.individual");
+  }
+
   function workoutCard(w, lobby) {
-    const typeLabel = w.type === "group"
-      ? t("lobby.group")
-      : lobby.role === "coach" && w.forName ? t("lobby.individualFor", { name: w.forName }) : t("lobby.individual");
     let status;
     if (lobby.role === "student") {
       const s = studentStatus(w);
@@ -145,13 +196,13 @@
       status = `<span class="status status-upcoming">${esc(sameDay(w.date, today) ? t("lobby.today") : t("lobby.upcoming"))}</span>`;
     }
     return `
-      <button class="workout-card" data-workout>
+      <button class="workout-card" data-workout="${lobby.workouts.indexOf(w)}">
         <span class="wc-time">${esc(w.time)}</span>
         <span class="grow">
           <strong>${esc(w.title)}</strong>
           <span class="chips">
-            <span class="chip ${w.type === "individual" ? "chip-ind" : ""}">${esc(typeLabel)}</span>
-            <span class="chip">${esc(t("lobby.exercises", { n: w.exercises }))}</span>
+            <span class="chip ${w.type === "individual" ? "chip-ind" : ""}">${esc(typeLabel(w, lobby))}</span>
+            <span class="chip">${esc(t("lobby.exercises", { n: w.exercises.length }))}</span>
           </span>
         </span>
         ${status}
@@ -245,17 +296,28 @@
       .map((s) => `<div class="stat"><strong>${esc(s.value)}</strong><span>${esc(s.label)}</span></div>`)
       .join("");
 
+    // Today's workout gets a one-tap "Geldim" for students; otherwise the card just opens the detail.
     const next = nextWorkout(lobby);
-    $("#nextWorkout").innerHTML = next
-      ? `<div class="next-card">
-           <div class="grow">
-             <span class="eyebrow">${esc(t("lobby.next"))}</span>
-             <strong>${esc(next.title)}</strong>
-             <span class="meta">${esc(whenLabel(next))}</span>
-           </div>
-           <button class="btn btn-primary btn-sm" data-workout>${esc(t("lobby.open"))}</button>
-         </div>`
-      : `<div class="placeholder">${esc(t("lobby.empty"))}</div>`;
+    if (next) {
+      const idx = lobby.workouts.indexOf(next);
+      let action = `<button class="btn btn-secondary btn-sm" data-workout="${idx}">${esc(t("lobby.open"))}</button>`;
+      if (lobby.role === "student" && canMark(next)) {
+        action = next.attended
+          ? `<span class="status status-attended">✓ ${esc(t("workout.marked"))}</span>`
+          : `<button class="btn btn-primary btn-sm" data-mark="${idx}">✓ ${esc(t("workout.markCta"))}</button>`;
+      }
+      $("#nextWorkout").innerHTML = `
+        <div class="next-card" data-workout="${idx}">
+          <div class="grow">
+            <span class="eyebrow">${esc(t("lobby.next"))}</span>
+            <strong>${esc(next.title)}</strong>
+            <span class="meta">${esc(whenLabel(next))}</span>
+          </div>
+          ${action}
+        </div>`;
+    } else {
+      $("#nextWorkout").innerHTML = `<div class="placeholder">${esc(t("lobby.empty"))}</div>`;
+    }
 
     $$(".segmented button").forEach((b) => b.classList.toggle("active", b.dataset.view === view.mode));
     if (view.mode === "month") renderMonth(lobby);
@@ -282,7 +344,8 @@
   }
 
   function renderRoleButton() {
-    const onLobby = $('[data-screen="lobby"]').classList.contains("active");
+    const active = $(".screen.active");
+    const onLobby = active && ["lobby", "workout"].includes(active.dataset.screen);
     const btn = $("#protoRole");
     btn.hidden = !onLobby;
     btn.textContent = t("proto.role", { role: t(`roles.${view.lobby.role}`) });
@@ -352,16 +415,30 @@
     renderLobby();
   });
 
-  // Workout detail and the other tabs come in later prototype parts.
+  function openWorkout(index) {
+    view.workout = view.lobby.workouts[index];
+    window.App.show("workout");
+  }
+
   $('[data-screen="lobby"]').addEventListener("click", (e) => {
-    if (e.target.closest("[data-workout]")) toast(t("lobby.detailSoon"));
+    const mark = e.target.closest("[data-mark]");
+    if (mark) {
+      setAttended(view.lobby.workouts[Number(mark.dataset.mark)], true);
+      renderLobby();
+      return;
+    }
+    const card = e.target.closest("[data-workout]");
+    if (card) openWorkout(Number(card.dataset.workout));
     if (e.target.closest("[data-soon]")) toast(t("lobby.soon"));
   });
 
   $("#protoRole").addEventListener("click", () => {
     view.lobby.role = view.lobby.role === "coach" ? "student" : "coach";
-    render();
+    document.dispatchEvent(new Event("app:render")); // re-render lobby and workout detail
   });
+
+  // Shared with workout.js.
+  window.Lobby = { view, today, esc, fmt, typeLabel, canMark, setAttended, nextWorkout, MARK_WINDOW_DAYS };
 
   document.addEventListener("app:render", render);
   render();

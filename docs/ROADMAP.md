@@ -28,7 +28,7 @@
 - [x] GitHub reposu ve sürüm kontrolü düzeni
 - [x] Prototip 1: Giriş ve lobiye katılma akışı
 - [x] Prototip 2: Lobi ana ekranı ve takvim (haftalık/aylık)
-- [ ] Prototip 3: Antrenman detayı ve "geldim" işaretleme
+- [x] Prototip 3: Antrenman detayı ve "geldim" işaretleme
 - [ ] Prototip 4: Hoca: antrenman oluşturma (toplu/bireysel, egzersiz sıralama)
 - [ ] Prototip 5: Hoca: üyeler, istatistikler, lobi ayarları ve lobiyi bozma
 - [ ] Prototipin onaylanması
